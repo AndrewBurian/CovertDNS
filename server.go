@@ -5,7 +5,7 @@ import (
 	"crypto/rand"
 	"io"
 	"strings"
-	"encoding/base64"
+	"encoding/base32"
 	"crypto/rc4"
 	//"fmt"
 )
@@ -54,7 +54,7 @@ func decodeAndSave(dst io.Writer, secret string) {
 		}
 
 		// add padding back on
-		for len(data) % 4 != 0 {
+		for len(data) % 8 != 0 {
 			data = append(data, byte('='))
 		}
 
@@ -62,8 +62,8 @@ func decodeAndSave(dst io.Writer, secret string) {
 		//fmt.Println(string(data))
 
 		// decode
-		text := make([]byte, base64.StdEncoding.DecodedLen(len(data)))
-		n, err := base64.StdEncoding.Decode(text, data)
+		text := make([]byte, base32.StdEncoding.DecodedLen(len(data)))
+		n, err := base32.StdEncoding.Decode(text, data)
 		if err != nil {
 			panic(err)
 		}

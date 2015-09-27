@@ -4,7 +4,7 @@ import (
 	"github.com/miekg/dns"
 	"io"
 	"crypto/rc4"
-	"encoding/base64"
+	"encoding/base32"
 	//"fmt"
 	"strings"
 )
@@ -36,7 +36,7 @@ func client(src io.Reader, remote, secret string) {
 		//fmt.Printf("Encrypting %v bytes\n", n)
 
 		// encode the data (dst, src)
-		encoded := base64.StdEncoding.EncodeToString(text[:n])
+		encoded := base32.StdEncoding.EncodeToString(text[:n])
 
 		// trim the non-domain standard '='
 		encoded = strings.TrimRight(encoded, "=")
