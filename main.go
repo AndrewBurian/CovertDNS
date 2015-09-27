@@ -1,3 +1,25 @@
+/* ----------------------------------------------------------------------------
+SOURCE FILE
+
+Name:		main.go
+
+Program:	BadDNS
+
+Developer:	Andrew Burian
+
+Created On: 	2015-09-24
+
+Functions:
+	func main()
+
+Description:
+	The main entry point for the BadDNS program. Contains the main
+	function.
+
+Revisions:
+	(none)
+
+---------------------------------------------------------------------------- */
 package main
 
 import (
@@ -7,6 +29,30 @@ import (
 	"io"
 )
 
+/* ----------------------------------------------------------------------------
+FUNCTION
+
+Name:		Main
+
+Prototype:	func main()
+
+Developer:	Andrew Burian
+
+Created On:	2015-09-24
+
+Parameters:
+	(none)
+
+Return Values:
+	(none)
+
+Description:
+	Entry point for the program. Parses args and preformes sanity checks
+	on them. Then decides whether to run the client or server routines.
+
+Revisions:
+	(none)
+---------------------------------------------------------------------------- */
 func main() {
 
 	// set up program flags

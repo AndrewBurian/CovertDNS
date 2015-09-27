@@ -1,3 +1,27 @@
+/* ----------------------------------------------------------------------------
+SOURCE FILE
+
+Name:		server.go
+
+Program:	BadDNS
+
+Developer:	Andrew Burian
+
+Created On: 	2015-09-24
+
+Functions:
+	func server(dst io.Writer, secret string)
+	func decodeAndSave(dst io.Writer, secret string)
+	func serveResponse(w dns.ResponseWriter, r *dns.Msg)
+
+Description:
+	The main entry point for the BadDNS program. Contains the main
+	function.
+
+Revisions:
+	(none)
+
+---------------------------------------------------------------------------- */
 package main
 
 import (
@@ -7,11 +31,38 @@ import (
 	"strings"
 	"encoding/base32"
 	"crypto/rc4"
-	//"fmt"
 )
 
 var messages chan chan byte
 
+/* ----------------------------------------------------------------------------
+FUNCTION
+
+Name:		Server
+
+Prototype:	func server(dst io.Writer, secret string)
+
+Developer:	Andrew Burian
+
+Created On:	2015-09-24
+
+Parameters:
+	dst io.Writer
+		the writer to write received data to
+	secret string
+		the rc4 encryption key for the encrypted data
+
+Return Values:
+	(none)
+
+Description:
+	Runs the DNS server capable of receiving data encrypted
+	with the provided secret, and writes received data to
+	the provided writer.
+
+Revisions:
+	(none)
+---------------------------------------------------------------------------- */
 func server(dst io.Writer, secret string) {
 
 	messages = make(chan chan byte, 1)
@@ -32,6 +83,34 @@ func server(dst io.Writer, secret string) {
 
 }
 
+/* ----------------------------------------------------------------------------
+FUNCTION
+
+Name:		Decode and Save
+
+Prototype:	func decodeAndSave(dst io.Writer, secret string)
+
+Developer:	Andrew Burian
+
+Created On:	2015-09-24
+
+Parameters:
+	dst io.Writer
+		the writer to write received data to
+	secret string
+		the rc4 encryption key for the encrypted data
+
+Return Values:
+	(none)
+
+Description:
+	Endlessly receives a new channel from the global
+	channel store and from that channel, reads in, decrypts
+	and saves data to the destination writer
+
+Revisions:
+	(none)
+---------------------------------------------------------------------------- */
 func decodeAndSave(dst io.Writer, secret string) {
 
 	// set up cipher
@@ -46,8 +125,6 @@ func decodeAndSave(dst io.Writer, secret string) {
 		datachan := <-messages
 		data := make([]byte, 0)
 
-		//fmt.Println("Starting new decoding sequence")
-
 		// read until the end of the channel
 		for b := range datachan {
 			data = append(data, b)
@@ -58,9 +135,6 @@ func decodeAndSave(dst io.Writer, secret string) {
 			data = append(data, byte('='))
 		}
 
-		//fmt.Println("Sequence:")
-		//fmt.Println(string(data))
-
 		// decode
 		text := make([]byte, base32.StdEncoding.DecodedLen(len(data)))
 		n, err := base32.StdEncoding.Decode(text, data)
@@ -68,24 +142,46 @@ func decodeAndSave(dst io.Writer, secret string) {
 			panic(err)
 		}
 
-		//fmt.Printf("Decrypting %v bytes\n", n)
-
 		// decrypt
 		cipher.XORKeyStream(text[:n], text[:n])
 
 		// save
 		dst.Write(text)
 
-		//fmt.Println("Decoding done")
-
 	}
 
 }
 
-func serveResponse(w dns.ResponseWriter, r *dns.Msg) {
+/* ----------------------------------------------------------------------------
+FUNCTION
 
-	//fmt.Println("Got new query")
-	//fmt.Println(r.Question[0].Name)
+Name:		Serve Response
+
+Prototype:	func serveResponse(w dns.ResponseWriter, r *dns.Msg)
+
+Developer:	Andrew Burian
+
+Created On:	2015-09-24
+
+Parameters:
+	w dns.ResponseWriter
+		the writer that will respond to the dns query
+	r dns.Msg
+		the dns query to respond to
+
+Return Values:
+	(none)
+
+Description:
+	Handles a single dns request by generating and writing
+	a response to the provided writer.
+	Also strips out the contained data and sends it over a
+	channel
+
+Revisions:
+	(none)
+---------------------------------------------------------------------------- */
+func serveResponse(w dns.ResponseWriter, r *dns.Msg) {
 
 	// create a message to respond with
 	respMsg := new(dns.Msg)
@@ -110,16 +206,11 @@ func serveResponse(w dns.ResponseWriter, r *dns.Msg) {
 
 	w.WriteMsg(respMsg)
 
-	//fmt.Println("Responded to query")
-
 	// now that the response has been handled
 	// process the covert data
 
 	// get the data from the query
 	data := (strings.Split(r.Question[0].Name, "."))[0]
-
-	//fmt.Println("Sending encoded message")
-	//fmt.Println(data)
 
 	// create the new message channel
 	datachan := make(chan byte, len(data))
@@ -133,7 +224,5 @@ func serveResponse(w dns.ResponseWriter, r *dns.Msg) {
 	}
 
 	close(datachan)
-
-	//fmt.Println("Done sended encoded message")
 
 }
