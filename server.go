@@ -3,7 +3,7 @@ SOURCE FILE
 
 Name:		server.go
 
-Program:	BadDNS
+Program:	CovertDNS
 
 Developer:	Andrew Burian
 
@@ -15,7 +15,7 @@ Functions:
 	func serveResponse(w dns.ResponseWriter, r *dns.Msg)
 
 Description:
-	The main entry point for the BadDNS program. Contains the main
+	The main entry point for the CovertDNS program. Contains the main
 	function.
 
 Revisions:

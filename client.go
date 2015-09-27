@@ -3,7 +3,7 @@ SOURCE FILE
 
 Name:		client.go
 
-Program:	BadDNS
+Program:	CovertDNS
 
 Developer:	Andrew Burian
 
